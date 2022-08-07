@@ -1,12 +1,11 @@
 {
-    "name": "dasprid/enum",
-    "description": "PHP 7.1 enum implementation",
+    "name": "slava-basko/enum",
+    "description": "PHP enum implementation",
     "license": "BSD-2-Clause",
     "authors": [
         {
-            "name": "Ben Scholzen 'DASPRiD'",
-            "email": "mail@dasprids.de",
-            "homepage": "https://dasprids.de/",
+            "name": "Slava Basko",
+            "email": "basko.slava@gmail.com",
             "role": "Developer"
         }
     ],
@@ -15,7 +14,7 @@
         "map"
     ],
     "require-dev": {
-        "phpunit/phpunit": "^7 | ^8 | ^9",
+        "phpunit/phpunit": "^4",
         "squizlabs/php_codesniffer": "^3.4"
     },
     "autoload": {

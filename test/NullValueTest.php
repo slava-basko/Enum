@@ -1,5 +1,4 @@
 <?php
-declare(strict_types = 1);
 
 namespace DASPRiD\EnumTest;
 
@@ -11,21 +10,21 @@ use PHPUnit\Framework\TestCase;
 
 final class NullValueTest extends TestCase
 {
-    public function testExceptionOnCloneAttempt() : void
+    public function testExceptionOnCloneAttempt()
     {
-        $this->expectException(CloneNotSupportedException::class);
+        $this->setExpectedException(CloneNotSupportedException::class);
         clone NullValue::instance();
     }
 
-    public function testExceptionOnSerializeAttempt() : void
+    public function testExceptionOnSerializeAttempt()
     {
-        $this->expectException(SerializeNotSupportedException::class);
+        $this->setExpectedException(SerializeNotSupportedException::class);
         serialize(NullValue::instance());
     }
 
-    public function testExceptionOnUnserializeAttempt() : void
+    public function testExceptionOnUnserializeAttempt()
     {
-        $this->expectException(UnserializeNotSupportedException::class);
+        $this->setExpectedException(UnserializeNotSupportedException::class);
         unserialize('O:22:"DASPRiD\\Enum\\NullValue":0:{}');
     }
 }

@@ -1,14 +1,23 @@
-# PHP 7.1 enums
+# PHP enums
+Please, use PHP built-in Enum if you are on PHP 8.1+.
 
-[![Build Status](https://travis-ci.org/DASPRiD/Enum.svg?branch=master)](https://travis-ci.org/DASPRiD/Enum)
-[![Coverage Status](https://coveralls.io/repos/github/DASPRiD/Enum/badge.svg?branch=master)](https://coveralls.io/github/DASPRiD/Enum?branch=master)
-[![Latest Stable Version](https://poser.pugx.org/dasprid/enum/v/stable)](https://packagist.org/packages/dasprid/enum)
-[![Total Downloads](https://poser.pugx.org/dasprid/enum/downloads)](https://packagist.org/packages/dasprid/enum)
-[![License](https://poser.pugx.org/dasprid/enum/license)](https://packagist.org/packages/dasprid/enum)
+This is a port of https://github.com/DASPRiD/Enum for PHP 5 because there still exist services/apps in production 
+that using old PHP, unfortunately. But they also want a bit of Enum 🙂.
 
-It is a well known fact that PHP is missing a basic enum type, ignoring the rather incomplete `SplEnum` implementation
+## How to run tests
+Install dependencies
+```shell
+docker run -v `pwd`:/var/www --rm feitosa/php55-with-composer composer install
+```
+
+Run tests
+```shell
+docker run -v `pwd`:/var/www --rm feitosa/php55-with-composer vendor/bin/phpunit
+```
+
+It is a well known fact that PHP is missing a basic enum type before version 8.1, ignoring the rather incomplete `SplEnum` implementation
 which is only available as a PECL extension. There are also quite a few other userland enum implementations around,
-but all of them have one or another compromise. This library tries to close that gap as far as PHP allows it to.
+but all of them have one or another compromise. This library tries to close that gap as far as PHP allows it to (before version 8.1).
 
 ## Usage
 
@@ -33,13 +42,13 @@ use DASPRiD\Enum\AbstractEnum;
  */
 final class WeekDay extends AbstractEnum
 {
-    protected const MONDAY = null;
-    protected const TUESDAY = null;
-    protected const WEDNESDAY = null;
-    protected const THURSDAY = null;
-    protected const FRIDAY = null;
-    protected const SATURDAY = null;
-    protected const SUNDAY = null;
+    protected static $MONDAY;
+    protected static $TUESDAY;
+    protected static $WEDNESDAY;
+    protected static $THURSDAY;
+    protected static $FRIDAY;
+    protected static $SATURDAY;
+    protected static $SUNDAY;
 }
 ``` 
 
@@ -99,22 +108,20 @@ use DASPRiD\Enum\AbstractEnum;
  */
 final class Planet extends AbstractEnum
 {
-    protected const MERCURY = [3.303e+23, 2.4397e6];
-    protected const VENUS = [4.869e+24, 6.0518e6];
-    protected const EARTH = [5.976e+24, 6.37814e6];
-    protected const MARS = [6.421e+23, 3.3972e6];
-    protected const JUPITER = [1.9e+27, 7.1492e7];
-    protected const SATURN = [5.688e+26, 6.0268e7];
-    protected const URANUS = [8.686e+25, 2.5559e7];
-    protected const NEPTUNE = [1.024e+26, 2.4746e7];
-    
+    protected static $MERCURY = [3.303e+23, 2.4397e6];
+    protected static $VENUS = [4.869e+24, 6.0518e6];
+    protected static $EARTH = [5.976e+24, 6.37814e6];
+    protected static $MARS = [6.421e+23, 3.3972e6];
+    protected static $JUPITER = [1.9e+27, 7.1492e7];
+    protected static $SATURN = [5.688e+26, 6.0268e7];
+    protected static $URANUS = [8.686e+25, 2.5559e7];
+    protected static $NEPTUNE = [1.024e+26, 2.4746e7];
+
     /**
      * Universal gravitational constant.
-     *
-     * @var float
      */
-    private const G = 6.67300E-11;
-    
+    private static $G = 6.67300E-11;
+
     /**
      * Mass in kilograms.
      *
@@ -124,33 +131,50 @@ final class Planet extends AbstractEnum
 
     /**
      * Radius in meters.
-     *    
+     *
      * @var float
-     */    
+     */
     private $radius;
-    
-    protected function __construct(float $mass, float $radius)
+
+    /**
+     * @param float $mass
+     * @param float $radius
+     */
+    protected function __construct($mass, $radius)
     {
         $this->mass = $mass;
         $this->radius = $radius;
     }
-    
-    public function mass() : float
+
+    /**
+     * @return float
+     */
+    public function mass()
     {
         return $this->mass;
     }
-    
-    public function radius() : float
+
+    /**
+     * @return float
+     */
+    public function radius()
     {
-        return $this->radius; 
+        return $this->radius;
     }
-    
-    public function surfaceGravity() : float
+
+    /**
+     * @return float
+     */
+    public function surfaceGravity()
     {
-        return self::G * $this->mass / ($this->radius * $this->radius);
+        return self::$G * $this->mass / ($this->radius * $this->radius);
     }
-    
-    public function surfaceWeight(float $otherMass) : float
+
+    /**
+     * @param float $otherMass
+     * @return float
+     */
+    public function surfaceWeight($otherMass)
     {
         return $otherMass * $this->surfaceGravity();
     }
@@ -158,7 +182,7 @@ final class Planet extends AbstractEnum
 
 $myMass = 80;
 
-foreach (Planet::values() as $planet) {
+foreach (Planet::cases() as $planet) {
     printf("Your weight on %s is %f\n", $planet, $planet->surfaceWeight($myMass));
 }
 ```

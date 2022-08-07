@@ -1,5 +1,4 @@
 <?php
-declare(strict_types = 1);
 
 namespace DASPRiD\EnumTest;
 
@@ -14,7 +13,7 @@ use ReflectionClass;
 
 final class AbstractEnumTest extends TestCase
 {
-    public function setUp(): void
+    public function setUp()
     {
         $reflectionClass = new ReflectionClass(AbstractEnum::class);
 
@@ -22,97 +21,107 @@ final class AbstractEnumTest extends TestCase
         $constantsProperty->setAccessible(true);
         $constantsProperty->setValue([]);
 
-        $valuesProperty = $reflectionClass->getProperty('values');
-        $valuesProperty->setAccessible(true);
-        $valuesProperty->setValue([]);
+        $casesProperty = $reflectionClass->getProperty('values');
+        $casesProperty->setAccessible(true);
+        $casesProperty->setValue([]);
 
-        $allValuesLoadedProperty = $reflectionClass->getProperty('allValuesLoaded');
-        $allValuesLoadedProperty->setAccessible(true);
-        $allValuesLoadedProperty->setValue([]);
+        $allCasesLoadedProperty = $reflectionClass->getProperty('allValuesLoaded');
+        $allCasesLoadedProperty->setAccessible(true);
+        $allCasesLoadedProperty->setValue([]);
     }
 
-    public function testToString() : void
+    public function testToString()
     {
         $weekday = WeekDay::FRIDAY();
         self::assertSame('FRIDAY', (string) $weekday);
     }
 
-    public function testName() : void
+    public function testName()
     {
         $this->assertSame('WEDNESDAY', WeekDay::WEDNESDAY()->name());
+        $this->assertSame('WEDNESDAY', WeekDay::WEDNESDAY()->name);
     }
 
-    public function testOrdinal() : void
+    public function testOrdinal()
     {
         $this->assertSame(2, WeekDay::WEDNESDAY()->ordinal());
     }
 
-    public function testSameInstanceIsReturned() : void
+    public function testSameInstanceIsReturned()
     {
         self::assertSame(WeekDay::FRIDAY(), WeekDay::FRIDAY());
+        self::assertTrue(WeekDay::FRIDAY() == WeekDay::FRIDAY());
+        self::assertTrue(WeekDay::FRIDAY() === WeekDay::FRIDAY());
+        self::assertFalse(WeekDay::FRIDAY() != WeekDay::FRIDAY());
+        self::assertFalse(WeekDay::FRIDAY() !== WeekDay::FRIDAY());
     }
 
-    public static function testValueOf() : void
+    public static function testValueOf()
     {
         self::assertSame(WeekDay::FRIDAY(), WeekDay::valueOf('FRIDAY'));
     }
 
-    public function testValueOfInvalidConstant() : void
+    public static function testTryFromInvalidConstant()
     {
-        $this->expectException(IllegalArgumentException::class);
+        self::assertSame(null, WeekDay::tryFrom('CATURDAY'));
+    }
+
+    public function testValueOfInvalidConstant()
+    {
+        $this->setExpectedException(IllegalArgumentException::class);
         WeekDay::valueOf('CATURDAY');
     }
 
-    public function testExceptionOnCloneAttempt() : void
+    public function testExceptionOnCloneAttempt()
     {
-        $this->expectException(CloneNotSupportedException::class);
+        $this->setExpectedException(CloneNotSupportedException::class);
         clone WeekDay::FRIDAY();
     }
 
-    public function testExceptionOnSerializeAttempt() : void
+    public function testExceptionOnSerializeAttempt()
     {
-        $this->expectException(SerializeNotSupportedException::class);
+        $this->setExpectedException(SerializeNotSupportedException::class);
         serialize(WeekDay::FRIDAY());
     }
 
-    public function testExceptionOnUnserializeAttempt() : void
+    public function testExceptionOnUnserializeAttempt()
     {
-        $this->expectException(UnserializeNotSupportedException::class);
+        $this->setExpectedException(UnserializeNotSupportedException::class);
         unserialize('O:24:"DASPRiD\\EnumTest\\WeekDay":0:{}');
     }
 
-    public function testReturnValueOfValuesIsSortedByOrdinal() : void
+    public function testReturnValueOfValuesIsSortedByOrdinal()
     {
         // Initialize some week days out of order
         WeekDay::SATURDAY();
         WeekDay::TUESDAY();
 
-        $ordinals = array_values(array_map(function (WeekDay $weekDay) : int {
+        $ordinals = array_values(array_map(function (WeekDay $weekDay) {
             return $weekDay->ordinal();
         }, WeekDay::values()));
 
         self::assertSame([0, 1, 2, 3, 4, 5, 6], $ordinals);
 
-        $cachedOrdinals = array_values(array_map(function (WeekDay $weekDay) : int {
+        $cachedOrdinals = array_values(array_map(function (WeekDay $weekDay) {
             return $weekDay->ordinal();
         }, WeekDay::values()));
         $this->assertSame($ordinals, $cachedOrdinals);
     }
 
-    public function testCompareTo() : void
+    public function testCompareTo()
     {
         $this->assertSame(-4, WeekDay::WEDNESDAY()->compareTo(WeekDay::SUNDAY()));
         $this->assertSame(4, WeekDay::SUNDAY()->compareTo(WeekDay::WEDNESDAY()));
         $this->assertSame(0, WeekDay::WEDNESDAY()->compareTo(WeekDay::WEDNESDAY()));
     }
 
-    public function testCompareToWrongEnum() : void
+    public function testCompareToWrongEnum()
     {
-        $this->expectException(MismatchException::class);
+        $this->setExpectedException(MismatchException::class);
         WeekDay::MONDAY()->compareTo(Planet::EARTH());
     }
 
-    public function testParameterizedEnum() : void
+    public function testParameterizedEnum()
     {
         $planet = Planet::EARTH();
         $this->assertSame(5.976e+24, $planet->mass());

@@ -1,5 +1,4 @@
 <?php
-declare(strict_types = 1);
 
 namespace DASPRiD\Enum;
 
@@ -9,7 +8,11 @@ use DASPRiD\Enum\Exception\MismatchException;
 use DASPRiD\Enum\Exception\SerializeNotSupportedException;
 use DASPRiD\Enum\Exception\UnserializeNotSupportedException;
 use ReflectionClass;
+use ReflectionProperty;
 
+/**
+ * @property $name
+ */
 abstract class AbstractEnum
 {
     /**
@@ -51,9 +54,12 @@ abstract class AbstractEnum
     /**
      * Magic getter which forwards all calls to {@see self::valueOf()}.
      *
+     * @param string $name
+     * @param array $arguments
      * @return static
+     * @throws \DASPRiD\Enum\Exception\IllegalArgumentException|\ReflectionException
      */
-    final public static function __callStatic(string $name, array $arguments) : self
+    final public static function __callStatic($name, array $arguments)
     {
         return static::valueOf($name);
     }
@@ -64,10 +70,12 @@ abstract class AbstractEnum
      * The name must match exactly an identifier used to declare an enum in this type (extraneous whitespace characters
      * are not permitted).
      *
+     * @param string $name
      * @return static
      * @throws IllegalArgumentException if the enum has no constant with the specified name
+     * @throws \ReflectionException
      */
-    final public static function valueOf(string $name) : self
+    final public static function valueOf($name)
     {
         if (isset(self::$values[static::class][$name])) {
             return self::$values[static::class][$name];
@@ -83,11 +91,51 @@ abstract class AbstractEnum
     }
 
     /**
+     * Proxy method to match to a native enum.
+     *
+     * @param $name
      * @return static
+     * @throws \DASPRiD\Enum\Exception\IllegalArgumentException
+     * @throws \ReflectionException
      */
-    private static function createValue(string $name, int $ordinal, array $arguments) : self
+    final public static function from($name)
     {
-        $instance = new static(...$arguments);
+        return static::valueOf($name);
+    }
+
+    /**
+     * Proxy method to match to a native enum.
+     *
+     * @param $name
+     * @return static|null
+     */
+    final public static function tryFrom($name)
+    {
+        try {
+            return static::valueOf($name);
+        } catch (\Exception $exception) {
+            return null;
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param int $ordinal
+     * @param array $arguments
+     * @return static
+     * @throws \ReflectionException
+     */
+    private static function createValue($name, $ordinal, array $arguments)
+    {
+        $args = func_get_args();
+        $reflect = new ReflectionClass(static::class);
+        $instance = $reflect->newInstanceWithoutConstructor();
+
+        $constructor = $reflect->getConstructor();
+        $constructor->setAccessible(true);
+        $closure = $constructor->getClosure($instance);
+        call_user_func_array($closure, $args[2]);
+
         $instance->name = $name;
         $instance->ordinal = $ordinal;
         self::$values[static::class][$name] = $instance;
@@ -98,8 +146,9 @@ abstract class AbstractEnum
      * Obtains all possible types defined by this enum.
      *
      * @return static[]
+     * @throws \ReflectionException
      */
-    final public static function values() : array
+    final public static function values()
     {
         if (isset(self::$allValuesLoaded[static::class])) {
             return self::$values[static::class];
@@ -118,14 +167,31 @@ abstract class AbstractEnum
         }
 
         uasort(self::$values[static::class], function (self $a, self $b) {
-            return $a->ordinal() <=> $b->ordinal();
+            if ($a->ordinal() == $b->ordinal()) {
+                return 0;
+            }
+            return ($a->ordinal() < $b->ordinal()) ? -1 : 1;
         });
 
         self::$allValuesLoaded[static::class] = true;
         return self::$values[static::class];
     }
 
-    private static function constants() : array
+    /**
+     * Proxy method to match to a native enum.
+     *
+     * @return static[]
+     * @throws \ReflectionException
+     */
+    final public static function cases()
+    {
+        return static::values();
+    }
+
+    /**
+     * @return array
+     */
+    private static function constants()
     {
         if (isset(self::$constants[static::class])) {
             return self::$constants[static::class];
@@ -135,14 +201,15 @@ abstract class AbstractEnum
         $reflectionClass = new ReflectionClass(static::class);
         $ordinal = -1;
 
-        foreach ($reflectionClass->getReflectionConstants() as $reflectionConstant) {
-            if (! $reflectionConstant->isProtected()) {
+        foreach ($reflectionClass->getProperties(ReflectionProperty::IS_STATIC) as $reflectionProperty) {
+            if (! $reflectionProperty->isProtected()) {
                 continue;
             }
 
-            $value = $reflectionConstant->getValue();
+            $reflectionProperty->setAccessible(true);
+            $value = $reflectionProperty->getValue();
 
-            self::$constants[static::class][$reflectionConstant->name] = [
+            self::$constants[static::class][$reflectionProperty->getName()] = [
                 ++$ordinal,
                 is_array($value) ? $value : []
             ];
@@ -157,10 +224,27 @@ abstract class AbstractEnum
      * Most programmers should use the {@see self::__toString()} method in preference to this one, as the toString
      * method may return a more user-friendly name. This method is designed primarily for use in specialized situations
      * where correctness depends on getting the exact name, which will not vary from release to release.
+     *
+     * @return string
      */
-    final public function name() : string
+    final public function name()
     {
         return $this->name;
+    }
+
+    /**
+     * Proxy method to match to a native enum.
+     *
+     * @return string
+     * @throws \DASPRiD\Enum\Exception\IllegalArgumentException
+     */
+    final public function __get($name)
+    {
+        if ($name === 'name') {
+            return $this->name;
+        }
+
+        throw new IllegalArgumentException(sprintf('No property %s::%s', static::class, $name));
     }
 
     /**
@@ -169,8 +253,10 @@ abstract class AbstractEnum
      *
      * Most programmers will have no use for this method. It is designed for use by sophisticated enum-based data
      * structures.
+     *
+     * @return int
      */
-    final public function ordinal() : int
+    final public function ordinal()
     {
         return $this->ordinal;
     }
@@ -184,9 +270,10 @@ abstract class AbstractEnum
      * Enums are only comparable to other enums of the same type. The natural order implemented by this method is the
      * order in which the constants are declared.
      *
+     * @return int
      * @throws MismatchException if the passed enum is not of the same type
      */
-    final public function compareTo(self $other) : int
+    final public function compareTo(self $other)
     {
         if (! $other instanceof static) {
             throw new MismatchException(sprintf(
@@ -214,7 +301,7 @@ abstract class AbstractEnum
      *
      * @throws SerializeNotSupportedException
      */
-    final public function __sleep() : array
+    final public function __sleep()
     {
         throw new SerializeNotSupportedException();
     }
@@ -224,7 +311,7 @@ abstract class AbstractEnum
      *
      * @throws UnserializeNotSupportedException
      */
-    final public function __wakeup() : void
+    final public function __wakeup()
     {
         throw new UnserializeNotSupportedException();
     }
@@ -233,8 +320,10 @@ abstract class AbstractEnum
      * Turns the enum into a string representation.
      *
      * You may override this method to give a more user-friendly version.
+     *
+     * @return string
      */
-    public function __toString() : string
+    public function __toString()
     {
         return $this->name;
     }

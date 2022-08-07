@@ -1,5 +1,4 @@
 <?php
-declare(strict_types = 1);
 
 namespace DASPRiD\EnumTest;
 
@@ -17,19 +16,19 @@ use DASPRiD\Enum\AbstractEnum;
  */
 final class Planet extends AbstractEnum
 {
-    protected const MERCURY = [3.303e+23, 2.4397e6];
-    protected const VENUS = [4.869e+24, 6.0518e6];
-    protected const EARTH = [5.976e+24, 6.37814e6];
-    protected const MARS = [6.421e+23, 3.3972e6];
-    protected const JUPITER = [1.9e+27, 7.1492e7];
-    protected const SATURN = [5.688e+26, 6.0268e7];
-    protected const URANUS = [8.686e+25, 2.5559e7];
-    protected const NEPTUNE = [1.024e+26, 2.4746e7];
+    protected static $MERCURY = [3.303e+23, 2.4397e6];
+    protected static $VENUS = [4.869e+24, 6.0518e6];
+    protected static $EARTH = [5.976e+24, 6.37814e6];
+    protected static $MARS = [6.421e+23, 3.3972e6];
+    protected static $JUPITER = [1.9e+27, 7.1492e7];
+    protected static $SATURN = [5.688e+26, 6.0268e7];
+    protected static $URANUS = [8.686e+25, 2.5559e7];
+    protected static $NEPTUNE = [1.024e+26, 2.4746e7];
 
     /**
      * Universal gravitational constant.
      */
-    private const G = 6.67300E-11;
+    private static $G = 6.67300E-11;
 
     /**
      * Mass in kilograms.
@@ -45,28 +44,45 @@ final class Planet extends AbstractEnum
      */
     private $radius;
 
-    protected function __construct(float $mass, float $radius)
+    /**
+     * @param float $mass
+     * @param float $radius
+     */
+    protected function __construct($mass, $radius)
     {
         $this->mass = $mass;
         $this->radius = $radius;
     }
 
-    public function mass() : float
+    /**
+     * @return float
+     */
+    public function mass()
     {
         return $this->mass;
     }
 
-    public function radius() : float
+    /**
+     * @return float
+     */
+    public function radius()
     {
         return $this->radius;
     }
 
-    public function surfaceGravity() : float
+    /**
+     * @return float
+     */
+    public function surfaceGravity()
     {
-        return self::G * $this->mass / ($this->radius * $this->radius);
+        return self::$G * $this->mass / ($this->radius * $this->radius);
     }
 
-    public function surfaceWeight(float $otherMass) : float
+    /**
+     * @param float $otherMass
+     * @return float
+     */
+    public function surfaceWeight($otherMass)
     {
         return $otherMass * $this->surfaceGravity();
     }

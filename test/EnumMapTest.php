@@ -1,5 +1,4 @@
 <?php
-declare(strict_types = 1);
 
 namespace DASPRiD\EnumTest;
 
@@ -11,41 +10,41 @@ use stdClass;
 
 final class EnumMapTest extends TestCase
 {
-    public function testConstructionWithInvalidEnumType() : void
+    public function testConstructionWithInvalidEnumType()
     {
-        $this->expectException(IllegalArgumentException::class);
+        $this->setExpectedException(IllegalArgumentException::class);
         new EnumMap(stdClass::class, 'string', false);
     }
 
-    public function testUnexpectedKeyType() : void
+    public function testUnexpectedKeyType()
     {
-        $this->expectException(ExpectationException::class);
+        $this->setExpectedException(ExpectationException::class);
         $map = new EnumMap(WeekDay::class, 'string', false);
         $map->expect(Planet::class, 'string', false);
     }
 
-    public function testUnexpectedValueType() : void
+    public function testUnexpectedValueType()
     {
-        $this->expectException(ExpectationException::class);
+        $this->setExpectedException(ExpectationException::class);
         $map = new EnumMap(WeekDay::class, 'string', false);
         $map->expect(WeekDay::class, 'int', false);
     }
 
-    public function testUnexpectedNullableValueType() : void
+    public function testUnexpectedNullableValueType()
     {
-        $this->expectException(ExpectationException::class);
+        $this->setExpectedException(ExpectationException::class);
         $map = new EnumMap(WeekDay::class, 'string', true);
         $map->expect(WeekDay::class, 'string', false);
     }
 
-    public function testExpectedTypes() : void
+    public function testExpectedTypes()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $map->expect(WeekDay::class, 'string', true);
         $this->addToAssertionCount(1);
     }
 
-    public function testSize() : void
+    public function testSize()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $this->assertSame(0, $map->size());
@@ -53,7 +52,7 @@ final class EnumMapTest extends TestCase
         $this->assertSame(1, $map->size());
     }
 
-    public function testContainsValue() : void
+    public function testContainsValue()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $this->assertFalse($map->containsValue('foo'));
@@ -64,7 +63,7 @@ final class EnumMapTest extends TestCase
         $this->assertTrue($map->containsValue(null));
     }
 
-    public function testContainsKey() : void
+    public function testContainsKey()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $this->assertFalse($map->containsKey(WeekDay::TUESDAY()));
@@ -74,7 +73,7 @@ final class EnumMapTest extends TestCase
         $this->assertTrue($map->containsKey(WeekDay::WEDNESDAY()));
     }
 
-    public function testPutAndGet() : void
+    public function testPutAndGet()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $map->put(WeekDay::TUESDAY(), 'foo');
@@ -84,14 +83,14 @@ final class EnumMapTest extends TestCase
         $this->assertSame(null, $map->get(WeekDay::FRIDAY()));
     }
 
-    public function testPutInvalidKey() : void
+    public function testPutInvalidKey()
     {
-        $this->expectException(IllegalArgumentException::class);
+        $this->setExpectedException(IllegalArgumentException::class);
         $map = new EnumMap(WeekDay::class, 'string', true);
         $map->put(Planet::MARS(), 'foo');
     }
 
-    public function invalidValues() : array
+    public function invalidValues()
     {
         return [
             ['bool', null, false],
@@ -112,14 +111,14 @@ final class EnumMapTest extends TestCase
      * @dataProvider invalidValues
      * @param mixed $value
      */
-    public function testPutInvalidValue(string $valueType, $value, bool $allowNull = true) : void
+    public function testPutInvalidValue($valueType, $value, $allowNull = true)
     {
-        $this->expectException(IllegalArgumentException::class);
+        $this->setExpectedException(IllegalArgumentException::class);
         $map = new EnumMap(WeekDay::class, $valueType, $allowNull);
         $map->put(WeekDay::TUESDAY(), $value);
     }
 
-    public function validValues() : array
+    public function validValues()
     {
         return [
             ['bool', null],
@@ -143,14 +142,14 @@ final class EnumMapTest extends TestCase
      * @dataProvider validValues
      * @param mixed $value
      */
-    public function testPutValidValue(string $valueType, $value, bool $allowNull = true) : void
+    public function testPutValidValue($valueType, $value, $allowNull = true)
     {
         $map = new EnumMap(WeekDay::class, $valueType, $allowNull);
         $map->put(WeekDay::TUESDAY(), $value);
         $this->addToAssertionCount(1);
     }
 
-    public function testRemove() : void
+    public function testRemove()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $map->put(WeekDay::TUESDAY(), 'foo');
@@ -160,7 +159,7 @@ final class EnumMapTest extends TestCase
         $this->assertSame(0, $map->size());
     }
 
-    public function testClear() : void
+    public function testClear()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $map->put(WeekDay::TUESDAY(), 'foo');
@@ -169,13 +168,13 @@ final class EnumMapTest extends TestCase
         $this->assertSame(0, $map->size());
     }
 
-    public function testEqualsWithSameInstance() : void
+    public function testEqualsWithSameInstance()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $this->assertTrue($map->equals($map));
     }
 
-    public function testEqualsWithDifferentSize() : void
+    public function testEqualsWithDifferentSize()
     {
         $mapA = new EnumMap(WeekDay::class, 'string', true);
         $mapB = new EnumMap(WeekDay::class, 'string', true);
@@ -184,7 +183,7 @@ final class EnumMapTest extends TestCase
         $this->assertFalse($mapA->equals($mapB));
     }
 
-    public function testEqualsWithDifferentValues() : void
+    public function testEqualsWithDifferentValues()
     {
         $mapA = new EnumMap(WeekDay::class, 'string', true);
         $mapA->put(WeekDay::MONDAY(), 'foo');
@@ -194,7 +193,7 @@ final class EnumMapTest extends TestCase
         $this->assertFalse($mapA->equals($mapB));
     }
 
-    public function testEqualsWithDifferentConstants() : void
+    public function testEqualsWithDifferentConstants()
     {
         $mapA = new EnumMap(WeekDay::class, 'string', true);
         $mapA->put(WeekDay::MONDAY(), 'foo');
@@ -204,7 +203,7 @@ final class EnumMapTest extends TestCase
         $this->assertFalse($mapA->equals($mapB));
     }
 
-    public function testValues() : void
+    public function testValues()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $this->assertSame([], $map->values());
@@ -216,7 +215,7 @@ final class EnumMapTest extends TestCase
         $this->assertSame(['bar', 'foo', null], $map->values());
     }
 
-    public function testSerializeAndUnserialize() : void
+    public function testSerializeAndUnserialize()
     {
         $mapA = new EnumMap(WeekDay::class, 'string', true);
         $mapA->put(WeekDay::MONDAY(), 'foo');
@@ -225,7 +224,7 @@ final class EnumMapTest extends TestCase
         $this->assertTrue($mapA->equals($mapB));
     }
 
-    public function testIterator() : void
+    public function testIterator()
     {
         $map = new EnumMap(WeekDay::class, 'string', true);
         $map->put(WeekDay::FRIDAY(), 'foo');
