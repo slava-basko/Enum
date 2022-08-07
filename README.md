@@ -4,17 +4,6 @@ Please, use PHP built-in Enum if you are on PHP 8.1+.
 This is a port of https://github.com/DASPRiD/Enum for PHP 5 because there still exist services/apps in production 
 that using old PHP, unfortunately. But they also want a bit of Enum 🙂.
 
-## How to run tests
-Install dependencies
-```shell
-docker run -v `pwd`:/var/www --rm feitosa/php55-with-composer composer install
-```
-
-Run tests
-```shell
-docker run -v `pwd`:/var/www --rm feitosa/php55-with-composer vendor/bin/phpunit
-```
-
 It is a well known fact that PHP is missing a basic enum type before version 8.1, ignoring the rather incomplete `SplEnum` implementation
 which is only available as a PECL extension. There are also quite a few other userland enum implementations around,
 but all of them have one or another compromise. This library tries to close that gap as far as PHP allows it to (before version 8.1).
@@ -185,4 +174,15 @@ $myMass = 80;
 foreach (Planet::cases() as $planet) {
     printf("Your weight on %s is %f\n", $planet, $planet->surfaceWeight($myMass));
 }
+```
+
+### How to run tests
+Install dependencies
+```shell
+docker run -v `pwd`:/var/www --rm feitosa/php55-with-composer composer install
+```
+
+Run tests
+```shell
+docker run -v `pwd`:/var/www --rm feitosa/php55-with-composer vendor/bin/phpunit
 ```
